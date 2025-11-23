@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace DynamicButton
@@ -18,13 +19,11 @@ namespace DynamicButton
 
         private void FormMain_Load(object sender, EventArgs e)
         {
-            // Запуск таймера при загрузке формы
             timer.Interval = 1000; // 1 секунда
             timer.Tick += Timer_Tick;
             timer.Start();
         }
 
-        // Увеличение числа на всех кнопках каждую секунду
         private void Timer_Tick(object sender, EventArgs e)
         {
             foreach (Button btn in lstButtons)
@@ -34,7 +33,6 @@ namespace DynamicButton
             }
         }
 
-        // Создание новой кнопки
         private void btnCreateButton_Click(object sender, EventArgs e)
         {
             Button newButton = new Button
@@ -48,7 +46,6 @@ namespace DynamicButton
                     random.Next(256))
             };
 
-            // Случайные координаты в пределах формы (с отступами)
             int maxX = this.ClientSize.Width - newButton.Width - 20;
             int maxY = this.ClientSize.Height - newButton.Height - 80;
             int x = random.Next(20, maxX > 20 ? maxX : 20);
@@ -56,30 +53,29 @@ namespace DynamicButton
 
             newButton.Location = new Point(x, y);
 
-            // Контекстное меню: Удалить
+            // Контекстное меню с мнемоникой
             ContextMenuStrip cms = new ContextMenuStrip();
-            ToolStripMenuItem deleteItem = new ToolStripMenuItem("Удалить");
+            ToolStripMenuItem deleteItem = new ToolStripMenuItem("&Удалить кнопку");
             deleteItem.Click += (s, ev) =>
             {
                 lstButtons.Remove(newButton);
                 this.Controls.Remove(newButton);
+                newButton.Dispose();
             };
             cms.Items.Add(deleteItem);
             newButton.ContextMenuStrip = cms;
 
-            // Добавляем на форму и в список
             lstButtons.Add(newButton);
             this.Controls.Add(newButton);
             buttonCount++;
         }
 
-        // Удаление всех кнопок
         private void btnDeleteAll_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Удалить все кнопки?", "Подтверждение",
+            if (MessageBox.Show("Удалить все динамические кнопки?", "Подтверждение удаления",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                foreach (Button btn in lstButtons)
+                foreach (Button btn in lstButtons.ToList()) // ToList() чтобы избежать ошибки при удалении
                 {
                     this.Controls.Remove(btn);
                     btn.Dispose();
@@ -88,8 +84,7 @@ namespace DynamicButton
             }
         }
 
-        // Выход через меню
-        private void выходToolStripMenuItem_Click(object sender, EventArgs e)
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
